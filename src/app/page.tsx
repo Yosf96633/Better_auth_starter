@@ -4,6 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { APIError } from "better-auth";
 import { Loader2, LogOut } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -38,7 +39,7 @@ export default function Home() {
             router.push("/signup");
           },
           onError(context) {
-            toast.error(context.error.message)
+            toast.error(context.error.message);
           },
         },
       });
@@ -69,6 +70,7 @@ export default function Home() {
           Welcome back,{" "}
           <span className=" text-3xl font-bold">{session?.user?.name}</span>!
         </h1>
+        <Link className=" my-4" href={"/dashboard"}>Go to dashboard</Link> <br />
         <Button
           disabled={isLoading}
           onClick={handleSignOut}
