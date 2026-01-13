@@ -37,6 +37,9 @@ export default function Home() {
           onSuccess() {
             router.push("/signup");
           },
+          onError(context) {
+            toast.error(context.error.message)
+          },
         },
       });
     } catch (error) {
