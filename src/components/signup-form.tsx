@@ -15,6 +15,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -33,6 +34,8 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { APIError } from "better-auth";
+import { GoogleIcon } from "@/icons/GoogleIcon";
+import { GithubIcon } from "@/icons/GithubIcon";
 
 const formSchema = z.object({
   username: z
@@ -59,6 +62,7 @@ export function SignupForm({
 }: SignupFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
+  const [isGithubLoading, setIsGithubLoading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,15 +102,19 @@ export function SignupForm({
     );
   };
 
-  const handleGoogleSignup = async () => {
+  const handleSocialSignup = async (provider: "google" | "github") => {
+    const setLoading =
+      provider === "google" ? setIsGoogleLoading : setIsGithubLoading;
+
     try {
-      setIsGoogleLoading(true);
+      setLoading(true);
       const { data, error } = await authClient.signIn.social(
         {
-          provider: "google",
+          provider: provider,
         },
         {
           onSuccess(context) {
+            toast.success(`Successfully signed up with ${provider}! ✨🎉`);
             router.push("/");
           },
           onError(context) {
@@ -117,12 +125,15 @@ export function SignupForm({
       console.log("Data : ", data);
       console.log("Error : ", error);
     } catch (error) {
-      console.log("Error at the Signup form during Google signup : ", error);
+      console.log(
+        `Error at the Signup form during ${provider} signup : `,
+        error
+      );
       if (error instanceof APIError) {
         toast.error(error.message);
       }
     } finally {
-      setIsGoogleLoading(false);
+      setLoading(false);
     }
   };
 
@@ -131,39 +142,57 @@ export function SignupForm({
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Create Account</CardTitle>
-          <CardDescription>Sign up with your Google account</CardDescription>
+          <CardDescription>Sign up with your social account</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FieldGroup>
+                {/* Horizontal Social Buttons with Separator */}
                 <Field>
-                  <Button
-                    onClick={handleGoogleSignup}
-                    variant="outline"
-                    type="button"
-                  >
-                    {isGoogleLoading ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                        <span>Sign up with Google</span>
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-4">
+                    <Button
+                      onClick={() => handleSocialSignup("google")}
+                      variant="outline"
+                      type="button"
+                      className="flex-1"
+                      disabled={isGoogleLoading || isGithubLoading}
+                    >
+                      {isGoogleLoading ? (
+                        <Loader2 className="animate-spin h-4 w-4" />
+                      ) : (
+                        <>
+                          <GoogleIcon />
+                          <span>Google</span>
+                        </>
+                      )}
+                    </Button>
+
+                    <Separator orientation="vertical" className="h-20" />
+
+                    <Button
+                      onClick={() => handleSocialSignup("github")}
+                      variant="outline"
+                      type="button"
+                      className="flex-1"
+                      disabled={isGoogleLoading || isGithubLoading}
+                    >
+                      {isGithubLoading ? (
+                        <Loader2 className="animate-spin h-4 w-4" />
+                      ) : (
+                        <>
+                          <GithubIcon />
+                          <span>Github</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </Field>
+
                 <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                   Or continue with
                 </FieldSeparator>
+
                 <FormField
                   control={form.control}
                   name="username"
@@ -173,9 +202,7 @@ export function SignupForm({
                       <FormControl>
                         <Input placeholder="username" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        This is your public display name.
-                      </FormDescription>
+
                       <FormMessage />
                     </FormItem>
                   )}

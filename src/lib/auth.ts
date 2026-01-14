@@ -17,10 +17,7 @@ export const auth = betterAuth({
       try {
         const { success, data } = await sendPasswordReset({ user, url });
         if (!success) {
-          console.log(
-            "Error in auth.ts sendPasswordReset function : ",
-            data
-          );
+          console.log("Error in auth.ts sendPasswordReset function : ", data);
           toast.error(`Error while sending Reset password email!`);
         }
       } catch (error) {
@@ -64,6 +61,10 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
   plugins: [nextCookies()],
