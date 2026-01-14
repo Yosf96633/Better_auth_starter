@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form"; // Only import useForm here
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
-  Form, // Import Form from UI components
+  Form,
   FormField,
   FormControl,
   FormDescription,
@@ -46,12 +46,20 @@ const formSchema = z.object({
     .max(20, "Password must be lesser than 20 characters!"),
 });
 
+interface SignupFormProps extends React.ComponentProps<"div"> {
+  onSignupSuccess?: (email: string) => void;
+  onSwitchToLogin?: () => void;
+}
+
 export function SignupForm({
   className,
+  onSignupSuccess,
+  onSwitchToLogin,
   ...props
-}: React.ComponentProps<"div">) {
+}: SignupFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,8 +68,10 @@ export function SignupForm({
       password: "",
     },
   });
+
   const isLoading = form.formState.isSubmitting;
   const router = useRouter();
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     await authClient.signUp.email(
       {
@@ -75,18 +85,45 @@ export function SignupForm({
           console.log("Error at sign up form : ", context.error);
         },
         onSuccess: async () => {
-          // 1. Reset the form fields
+          // Reset the form fields
           form.reset();
 
-          // 2. Show the success toast
-          toast.success("Sign up successful! 🎉");
+          // Show the success toast
+          toast.success("Sign up successful! 🎉 Please verify your email.");
 
-          setTimeout(() => {
-            router.push("/");
-          }, 1500);
+          // Switch to verification tab
+          onSignupSuccess?.(values.email);
         },
       }
     );
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      setIsGoogleLoading(true);
+      const { data, error } = await authClient.signIn.social(
+        {
+          provider: "google",
+        },
+        {
+          onSuccess(context) {
+            router.push("/");
+          },
+          onError(context) {
+            toast.error(context.error.message);
+          },
+        }
+      );
+      console.log("Data : ", data);
+      console.log("Error : ", error);
+    } catch (error) {
+      console.log("Error at the Signup form during Google signup : ", error);
+      if (error instanceof APIError) {
+        toast.error(error.message);
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -94,7 +131,7 @@ export function SignupForm({
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Create Account</CardTitle>
-          <CardDescription>Login with your Google account</CardDescription>
+          <CardDescription>Sign up with your Google account</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -102,41 +139,12 @@ export function SignupForm({
               <FieldGroup>
                 <Field>
                   <Button
-                    onClick={async () => {
-                      try {
-                        setIsGoogleLoading(true);
-                        const { data, error } = await authClient.signIn.social(
-                          {
-                            provider: "google",
-                          },
-                          {
-                            onSuccess(context) {
-                              router.push("/");
-                            },
-                            onError(context) {
-                              toast(context.error.message);
-                            },
-                          }
-                        );
-                        console.log("Data : ", data);
-                        console.log("Error : ", error);
-                      } catch (error) {
-                        console.log(
-                          "Error at the Login form during login Google : ",
-                          error
-                        );
-                        if (error instanceof APIError) {
-                          toast.error(error.message);
-                        }
-                      } finally {
-                        setIsGoogleLoading(false);
-                      }
-                    }}
+                    onClick={handleGoogleSignup}
                     variant="outline"
                     type="button"
                   >
                     {isGoogleLoading ? (
-                      <Loader2 className=" animate-spin" />
+                      <Loader2 className="animate-spin" />
                     ) : (
                       <>
                         <svg
@@ -148,7 +156,7 @@ export function SignupForm({
                             fill="currentColor"
                           />
                         </svg>
-                        <span>Login with Google</span>
+                        <span>Sign up with Google</span>
                       </>
                     )}
                   </Button>
@@ -227,13 +235,20 @@ export function SignupForm({
                 <Field>
                   <Button disabled={isLoading} type="submit" className="w-full">
                     {isLoading ? (
-                      <LoaderCircle className=" animate-spin size-4" />
+                      <LoaderCircle className="animate-spin size-4" />
                     ) : (
                       "Sign up"
                     )}
                   </Button>
                   <FieldDescription className="text-center">
-                    Already have an account? <a href="/login">Log in</a>
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={onSwitchToLogin}
+                      className="underline underline-offset-4 hover:text-primary"
+                    >
+                      Log in
+                    </button>
                   </FieldDescription>
                 </Field>
               </FieldGroup>

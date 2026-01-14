@@ -16,13 +16,22 @@ export default function Home() {
   useEffect(() => {
     console.log("User sessions: ", session);
   }, [session]);
-  if (isPending || !session) {
+  if (isPending) {
     return (
       <div className="h-dvh w-dvw grid place-content-center">
         <div className="flex space-x-3 items-center justify-center text-gray-400">
           <Loader2 className="animate-spin size-8" />
           <h1 className="text-4xl font-semibold">Loading...</h1>
         </div>
+      </div>
+    );
+  }
+  if (!session) {
+    return (
+      <div className="h-dvh w-dvw grid place-content-center">
+        <h1 className="text-4xl font-semibold">
+          <Link href={"/auth/login"}>Login</Link>
+        </h1>
       </div>
     );
   }
@@ -36,7 +45,7 @@ export default function Home() {
       await authClient.signOut({
         fetchOptions: {
           onSuccess() {
-            router.push("/signup");
+            router.push("/auth/login");
           },
           onError(context) {
             toast.error(context.error.message);
@@ -70,7 +79,12 @@ export default function Home() {
           Welcome back,{" "}
           <span className=" text-3xl font-bold">{session?.user?.name}</span>!
         </h1>
-        <Link className=" my-4" href={"/dashboard"}>Go to dashboard</Link> <br />
+        <div>
+          <Link className=" my-4" href={"/dashboard"}>
+            Go to dashboard
+          </Link>
+        </div>
+
         <Button
           disabled={isLoading}
           onClick={handleSignOut}

@@ -22,7 +22,6 @@ import {
   Form,
   FormField,
   FormControl,
-  FormDescription,
   FormItem,
   FormLabel,
   FormMessage,
@@ -32,7 +31,6 @@ import { Eye, EyeOff, Loader2, LoaderCircle } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { APIError } from "better-auth";
 
 const formSchema = z.object({
@@ -43,11 +41,19 @@ const formSchema = z.object({
     .max(20, "Password must be lesser than 20 characters!"),
 });
 
+interface LoginFormProps extends React.ComponentProps<"div"> {
+  onEmailNotVerified?: (email: string) => void;
+  onSwitchToSignup?: () => void;
+}
+
 export function LoginForm({
   className,
+  onEmailNotVerified,
+  onSwitchToSignup,
   ...props
-}: React.ComponentProps<"div">) {
+}: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,9 +62,10 @@ export function LoginForm({
       password: "",
     },
   });
-  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
+
   const isLoading = form.formState.isSubmitting;
   const router = useRouter();
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     await authClient.signIn.email(
       {
@@ -67,8 +74,17 @@ export function LoginForm({
       },
       {
         onError: (context) => {
-          toast.error(context.error.message);
-          console.log("Error at Login form : ", context.error);
+          const error = context.error;
+
+          // Check for email not verified error
+          if (error.status === 403 || error.code === "EMAIL_NOT_VERIFIED") {
+            toast.error("Please verify your email before logging in.");
+            onEmailNotVerified?.(values.email);
+            return;
+          }
+
+          toast.error(error.message);
+          console.log("Error at Login form : ", error);
         },
         onSuccess: async () => {
           form.reset();
@@ -79,6 +95,35 @@ export function LoginForm({
         },
       }
     );
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsGoogleLoading(true);
+      const { data, error } = await authClient.signIn.social(
+        {
+          provider: "google",
+        },
+        {
+          onSuccess() {
+            toast.success(`Successfully logged in with google!✨🎉`);
+            router.push("/");
+          },
+          onError(context) {
+            toast.error(context.error.message);
+          },
+        }
+      );
+      console.log("Data : ", data);
+      console.log("Error : ", error);
+    } catch (error) {
+      console.log("Error at the Login form during Google login : ", error);
+      if (error instanceof APIError) {
+        toast.error(error.message);
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -94,41 +139,12 @@ export function LoginForm({
               <FieldGroup>
                 <Field>
                   <Button
-                    onClick={async () => {
-                      try {
-                        setIsGoogleLoading(true);
-                        const { data, error } = await authClient.signIn.social(
-                          {
-                            provider: "google",
-                          },
-                          {
-                            onSuccess(context) {
-                              router.push("/");
-                            },
-                            onError(context) {
-                              toast(context.error.message);
-                            },
-                          }
-                        );
-                        console.log("Data : ", data);
-                        console.log("Error : ", error);
-                      } catch (error) {
-                        console.log(
-                          "Error at the Login form during login Google : ",
-                          error
-                        );
-                        if (error instanceof APIError) {
-                          toast.error(error.message);
-                        }
-                      } finally {
-                        setIsGoogleLoading(false);
-                      }
-                    }}
+                    onClick={handleGoogleLogin}
                     variant="outline"
                     type="button"
                   >
                     {isGoogleLoading ? (
-                      <Loader2 className=" animate-spin" />
+                      <Loader2 className="animate-spin" />
                     ) : (
                       <>
                         <svg
@@ -208,16 +224,20 @@ export function LoginForm({
                     className="w-full"
                   >
                     {isLoading ? (
-                      <LoaderCircle className=" animate-spin size-4" />
+                      <LoaderCircle className="animate-spin size-4" />
                     ) : (
                       "Login"
                     )}
                   </Button>
                   <FieldDescription className="text-center">
                     Don&apos;t have an account?{" "}
-                    <Link prefetch={true} href="/signup">
-                      Signup
-                    </Link>
+                    <button
+                      type="button"
+                      onClick={onSwitchToSignup}
+                      className="underline underline-offset-4 hover:text-primary"
+                    >
+                      Sign up
+                    </button>
                   </FieldDescription>
                 </Field>
               </FieldGroup>

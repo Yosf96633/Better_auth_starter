@@ -1,17 +1,18 @@
 import { GalleryVerticalEnd } from "lucide-react";
-
-import { LoginForm } from "@/components/login-form";
+import { AuthTabs } from "@/components/auth-tabs";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
-export default async function LoginPage() {
+export default async function AuthPage() {
   const session = await auth.api.getSession({
-    headers : await headers(),
+    headers: await headers(),
   });
+  
   if (session) {
     redirect("/dashboard");
   }
+  
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
@@ -21,7 +22,7 @@ export default async function LoginPage() {
           </div>
           Acme Inc.
         </a>
-        <LoginForm />
+        <AuthTabs />
       </div>
     </div>
   );

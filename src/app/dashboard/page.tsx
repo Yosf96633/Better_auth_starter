@@ -8,8 +8,8 @@ const page = async () => {
   });
   return (
     <div className=" w-dvw h-dvh grid place-content-center">
-      <h3 className=" text-4xl text-center font-extrabold">Dashboard</h3>
-      <h1 className=" text-center text-5xl font-bold">{session?.user.name}</h1>
+      <h3 className=" text-4xl text-center font-semibold">Dashboard</h3>
+      <h1 className=" text-center text-7xl uppercase ">{session?.user.name}</h1>
       <form className=" text-center my-4" action={signOut}>
         <Button className="" variant={"destructive"} type="submit">
           Sign Out
