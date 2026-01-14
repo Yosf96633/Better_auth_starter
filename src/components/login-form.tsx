@@ -25,6 +25,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "./ui/form";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2, LoaderCircle } from "lucide-react";
@@ -44,12 +45,14 @@ const formSchema = z.object({
 interface LoginFormProps extends React.ComponentProps<"div"> {
   onEmailNotVerified?: (email: string) => void;
   onSwitchToSignup?: () => void;
+  onSwitchToForgotPassword?: () => void;
 }
 
 export function LoginForm({
   className,
   onEmailNotVerified,
   onSwitchToSignup,
+  onSwitchToForgotPassword,
   ...props
 }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -212,6 +215,15 @@ export function LoginForm({
                           </Button>
                         </div>
                       </FormControl>
+                      <FormDescription className="underline cursor-pointer text-end">
+                        <button
+                          type="button"
+                          onClick={onSwitchToForgotPassword}
+                          className="hover:text-primary"
+                        >
+                          Forgot password?
+                        </button>
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

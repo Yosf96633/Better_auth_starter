@@ -3,7 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db"; // your drizzle instance
 import * as schema from "@/db/auth-schema";
-import { sendEmailVerification } from "./emails/email";
+import { sendEmailVerification, sendPasswordReset } from "./emails/email";
 import { toast } from "sonner";
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -13,7 +13,24 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    sendResetPassword: async () => {},
+    sendResetPassword: async ({ user, url }) => {
+      try {
+        const { success, data } = await sendPasswordReset({ user, url });
+        if (!success) {
+          console.log(
+            "Error in auth.ts sendPasswordReset function : ",
+            data
+          );
+          toast.error(`Error while sending Reset password email!`);
+        }
+      } catch (error) {
+        console.log(
+          "Error in auth.ts sendPasswordReset function in catch block : ",
+          error
+        );
+        toast.error(`Error while  sending Reset password email!`);
+      }
+    },
   },
   emailVerification: {
     autoSignInAfterVerification: true,
