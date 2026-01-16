@@ -12,10 +12,8 @@ import {
   Field,
   FieldDescription,
   FieldGroup,
-  FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,19 +21,15 @@ import {
   Form,
   FormField,
   FormControl,
-  FormDescription,
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
+} from "@/components/ui/form";
 import { useState } from "react";
-import { Eye, EyeOff, Loader2, LoaderCircle, ChevronDown } from "lucide-react";
+import {LoaderCircle, ChevronDown } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { APIError } from "better-auth";
-import { GoogleIcon } from "@/icons/GoogleIcon";
-import { GithubIcon } from "@/icons/GithubIcon";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -49,57 +43,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { auth } from "@/lib/auth";
 
-const formSchema = z.object({
+const profileUpdateFormSchema = z.object({
   username: z
     .string()
     .min(2, "Username must be greater than 2 characters!")
     .max(50, "Username must be lesser than 50 characters!"),
-  email: z.string().email("Please enter valid email!"),
-  password: z
-    .string()
-    .min(8, "Password must be greater than 8 characters!")
-    .max(20, "Password must be lesser than 20 characters!"),
+  email: z.email(),
   dateOfBirth: z.date("Date of birth is required"),
   gender: z.string("Please select a gender").min(1, "Please select a gender"),
+  bio: z.string().optional(),
 });
 
-interface SignupFormProps extends React.ComponentProps<"div"> {
-  onSignupSuccess?: (email: string) => void;
-  onSwitchToLogin?: () => void;
-}
+type User = typeof auth.$Infer.Session.user;
 
-export function SignupForm({
-  className,
-  onSignupSuccess,
-  onSwitchToLogin,
-  ...props
-}: SignupFormProps) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  const [isGithubLoading, setIsGithubLoading] = useState<boolean>(false);
+export function UpdateProfileForm({ user }: { user: User }) {
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof profileUpdateFormSchema>>({
+    resolver: zodResolver(profileUpdateFormSchema),
     defaultValues: {
-      username: "",
-      email: "",
-      password: "",
-      gender: "",
+      username: user.name,
+      email: user.email,
+      gender: user.gender ?? undefined,
+      dateOfBirth: user.dateOfBirth ?? undefined,
     },
   });
 
   const isLoading = form.formState.isSubmitting;
   const router = useRouter();
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await authClient.signUp.email(
+  const onSubmit = async (values: z.infer<typeof profileUpdateFormSchema>) => {
+    await authClient.updateUser(
       {
         name: values.username,
-        email: values.email,
-        password: values.password,
-        // Add the additional fields here
         dateOfBirth: values.dateOfBirth,
         gender: values.gender,
       },
@@ -109,110 +86,27 @@ export function SignupForm({
           console.log("Error at sign up form : ", context.error);
         },
         onSuccess: async () => {
-          // Reset the form fields
-          form.reset();
-
           // Show the success toast
-          toast.success("Sign up successful! 🎉 Please verify your email.");
-
-          // Switch to verification tab
-          onSignupSuccess?.(values.email);
+          toast.success("Profile update ✔");
+          setTimeout(() => {
+            router.refresh();
+          }, 750);
         },
       }
     );
   };
 
-  const handleSocialSignup = async (provider: "google" | "github") => {
-    const setLoading =
-      provider === "google" ? setIsGoogleLoading : setIsGithubLoading;
-
-    try {
-      setLoading(true);
-      const { data, error } = await authClient.signIn.social(
-        {
-          provider: provider,
-        },
-        {
-          onSuccess(context) {
-            toast.success(`Successfully signed up with ${provider}! ✨🎉`);
-            router.push("/");
-          },
-          onError(context) {
-            toast.error(context.error.message);
-          },
-        }
-      );
-      console.log("Data : ", data);
-      console.log("Error : ", error);
-    } catch (error) {
-      console.log(
-        `Error at the Signup form during ${provider} signup : `,
-        error
-      );
-      if (error instanceof APIError) {
-        toast.error(error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-6")}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create Account</CardTitle>
+          <CardTitle className="text-xl">Update Profile</CardTitle>
           <CardDescription>Sign up with your social account</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FieldGroup>
-                {/* Horizontal Social Buttons with Separator */}
-                <Field>
-                  <div className="flex items-center gap-4">
-                    <Button
-                      onClick={() => handleSocialSignup("google")}
-                      variant="outline"
-                      type="button"
-                      className="flex-1"
-                      disabled={isGoogleLoading || isGithubLoading}
-                    >
-                      {isGoogleLoading ? (
-                        <Loader2 className="animate-spin h-4 w-4" />
-                      ) : (
-                        <>
-                          <GoogleIcon />
-                          <span>Google</span>
-                        </>
-                      )}
-                    </Button>
-
-                    <Separator orientation="vertical" className="h-20" />
-
-                    <Button
-                      onClick={() => handleSocialSignup("github")}
-                      variant="outline"
-                      type="button"
-                      className="flex-1"
-                      disabled={isGoogleLoading || isGithubLoading}
-                    >
-                      {isGithubLoading ? (
-                        <Loader2 className="animate-spin h-4 w-4" />
-                      ) : (
-                        <>
-                          <GithubIcon />
-                          <span>Github</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </Field>
-
-                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                  Or continue with
-                </FieldSeparator>
-
                 <FormField
                   control={form.control}
                   name="username"
@@ -234,45 +128,11 @@ export function SignupForm({
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input
+                          disabled
                           type="email"
                           placeholder="example@email.com"
                           {...field}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            {...field}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                            <span className="sr-only">
-                              {showPassword ? "Hide password" : "Show password"}
-                            </span>
-                          </Button>
-                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -361,19 +221,9 @@ export function SignupForm({
                     {isLoading ? (
                       <LoaderCircle className="animate-spin size-4" />
                     ) : (
-                      "Sign up"
+                      "Update profile"
                     )}
                   </Button>
-                  <FieldDescription className="text-center">
-                    Already have an account?{" "}
-                    <button
-                      type="button"
-                      onClick={onSwitchToLogin}
-                      className="underline underline-offset-4 hover:text-primary"
-                    >
-                      Log in
-                    </button>
-                  </FieldDescription>
                 </Field>
               </FieldGroup>
             </form>

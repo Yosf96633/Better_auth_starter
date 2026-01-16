@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { APIError } from "better-auth";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -85,14 +85,24 @@ export default function Home() {
           </Link>
         </div>
 
-        <Button
-          disabled={isLoading}
-          onClick={handleSignOut}
-          className=" cursor-pointer"
-        >
-          {isLoading ? <Loader2 className=" animate-spin" /> : <LogOut />}
-          Sign out
-        </Button>
+        <div className=" flex gap-4 justify-center">
+          <Link href={"/profile"}>
+            <Button className=" cursor-pointer" variant={"outline"}>
+              <User />
+              Profile
+            </Button>
+          </Link>
+
+          <Button
+            disabled={isLoading}
+            onClick={handleSignOut}
+            className=" cursor-pointer"
+            variant={"destructive"}
+          >
+            {isLoading ? <Loader2 className=" animate-spin" /> : <LogOut />}
+            Sign out
+          </Button>
+        </div>
       </div>
     </div>
   );

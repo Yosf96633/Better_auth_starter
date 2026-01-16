@@ -6,6 +6,28 @@ import * as schema from "@/db/auth-schema";
 import { sendEmailVerification, sendPasswordReset } from "./emails/email";
 import { toast } from "sonner";
 export const auth = betterAuth({
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
+    additionalFields: {
+      bio: {
+        type: "string",
+        required: false,
+      },
+
+      dateOfBirth: {
+        type: "date",
+        required: false,
+      },
+
+      gender: {
+        type: "string",
+        required: false,
+        enum: ["male", "female", "other"],
+      },
+    },
+  },
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: schema,
