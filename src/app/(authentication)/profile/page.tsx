@@ -22,6 +22,7 @@ import ChangePassword from "./_components/changePassword";
 import SetPassword from "./_components/set-password";
 import Set_session_Tab from "./_components/setSession";
 import { AccountLinking } from "./_components/account-linking";
+import TwoAuthFactor from "./_components/twoAuthFactor";
 export default async function ProfilePage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -89,7 +90,10 @@ export default async function ProfilePage() {
           <Card>
             <CardContent>
               <LoadingSuspense>
-                <SecurityTab email={session.user.email} />
+                <SecurityTab
+                  email={session.user.email}
+                  isTwoFactorEnable={session.user.twoFactorEnabled ?? false}
+                />
               </LoadingSuspense>
             </CardContent>
           </Card>
@@ -120,7 +124,13 @@ export default async function ProfilePage() {
   );
 }
 
-const SecurityTab = async ({ email }: { email: string }) => {
+const SecurityTab = async ({
+  email,
+  isTwoFactorEnable,
+}: {
+  email: string;
+  isTwoFactorEnable: boolean;
+}) => {
   const accounts = await auth.api.listUserAccounts({
     headers: await headers(),
   });
@@ -131,6 +141,9 @@ const SecurityTab = async ({ email }: { email: string }) => {
   return (
     <div>
       {hasPasswordAccount ? <ChangePassword /> : <SetPassword email={email} />}
+      {hasPasswordAccount && (
+        <TwoAuthFactor isTwoFactorEnable={isTwoFactorEnable} />
+      )}
     </div>
   );
 };

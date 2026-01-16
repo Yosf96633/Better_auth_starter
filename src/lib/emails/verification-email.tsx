@@ -28,7 +28,7 @@ const EmailVerification = ({
         <Head />
         <Body className="bg-[#f5f6f7] font-sans py-[50px]">
           <Container className="mx-auto max-w-[480px]">
-            <Section className="bg-white rounded-[16px] shadow-sm mx-[16px] px-[40px] py-[50px]">
+            <Section className="bg-white rounded-[16px] shadow-sm mx-[16px] px-[40px] py-[50px] space-y-4">
               {/* Logo */}
               <Section className="text-center mb-[32px]">
                 <Img
@@ -60,7 +60,7 @@ const EmailVerification = ({
               <Section className="text-center mb-[32px]">
                 <Button
                   href={verificationLink}
-                  className="bg-[#1a1a1a] text-white px-[32px] py-[24px] rounded-[24px] text-[16px] font-medium no-underline box-border inline-block"
+                  className="bg-[#1a1a1a] text-white px-[12px] py-[8px] rounded-[24px] text-[16px] font-medium no-underline box-border inline-block"
                 >
                   Confirm Email
                 </Button>

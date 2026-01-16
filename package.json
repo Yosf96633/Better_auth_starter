@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "db:push": "pnpm drizzle-kit push"
+    "db:push": "pnpm drizzle-kit push",
+    "db:generate": "npx @better-auth/cli generate"
   },
   "dependencies": {
     "@arcjet/inspect": "1.0.0-beta.16",
@@ -37,6 +38,7 @@
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.0",
+    "react-qr-code": "^2.0.18",
     "resend": "^6.7.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
