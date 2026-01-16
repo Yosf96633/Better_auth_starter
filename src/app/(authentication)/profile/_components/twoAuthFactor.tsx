@@ -1,5 +1,4 @@
 "use client";
-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
@@ -20,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Loader2, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import QRCode from "react-qr-code"
+import QRCode from "react-qr-code";
 
 type TwoFactorData = { totpURI: string; backupCodes: string[] };
 const twoFactorAuthSchema = z.object({
@@ -39,6 +38,7 @@ const TwoAuthFactor = ({
   });
 
   const isLoading = form.formState.isSubmitting;
+  const router = useRouter();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [twoFactorData, setTwoFactorData] = useState<TwoFactorData | null>(
     null
@@ -49,6 +49,7 @@ const TwoAuthFactor = ({
     const result = await authClient.twoFactor.enable({
       password: values.password,
     });
+    console.log("Enable two factor authentication : ", result);
     if (result.error) {
       toast.error(result.error.message);
       form.reset();
@@ -66,8 +67,9 @@ const TwoAuthFactor = ({
         password: values.password,
       },
       {
-        onSuccess(context) {
+        onSuccess() {
           toast.success(`Disable 2FA successfully`);
+          router.refresh();
         },
         onError: async (ctx) => {
           form.reset();
@@ -142,7 +144,12 @@ const TwoAuthFactor = ({
                 )}
               />
 
-              <Button disabled={isLoading} variant={isTwoFactorEnable?"destructive":"default"} type="submit" className="w-full">
+              <Button
+                disabled={isLoading}
+                variant={isTwoFactorEnable ? "destructive" : "default"}
+                type="submit"
+                className="w-full"
+              >
                 {isLoading ? (
                   <LoaderCircle className="animate-spin size-4" />
                 ) : isTwoFactorEnable ? (
@@ -161,26 +168,24 @@ const TwoAuthFactor = ({
 
 export default TwoAuthFactor;
 
-
-
 const qrSchema = z.object({
   token: z.string().length(6),
-})
+});
 
-type QrForm = z.infer<typeof qrSchema>
+type QrForm = z.infer<typeof qrSchema>;
 function QRCodeVerify({
   totpURI,
   backupCodes,
   onDone,
 }: TwoFactorData & { onDone: () => void }) {
-  const [successfullyEnabled, setSuccessfullyEnabled] = useState(false)
-  const router = useRouter()
+  const [successfullyEnabled, setSuccessfullyEnabled] = useState(false);
+  const router = useRouter();
   const form = useForm<QrForm>({
     resolver: zodResolver(qrSchema),
     defaultValues: { token: "" },
-  })
+  });
 
-  const { isSubmitting } = form.formState
+  const { isSubmitting } = form.formState;
 
   async function handleQrCode(data: QrForm) {
     await authClient.twoFactor.verifyTotp(
@@ -188,15 +193,15 @@ function QRCodeVerify({
         code: data.token,
       },
       {
-        onError: error => {
-          toast.error(error.error.message || "Failed to verify code")
+        onError: (error) => {
+          toast.error(error.error.message || "Failed to verify code");
         },
         onSuccess: () => {
-          setSuccessfullyEnabled(true)
-          router.refresh()
+          setSuccessfullyEnabled(true);
+          router.refresh();
         },
       }
-    )
+    );
   }
 
   if (successfullyEnabled) {
@@ -217,7 +222,7 @@ function QRCodeVerify({
           Done
         </Button>
       </>
-    )
+    );
   }
 
   return (
@@ -243,9 +248,11 @@ function QRCodeVerify({
           />
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
-             {
-                isSubmitting ? <Loader2 className=" animate-spin size-4"/> : "Submit"
-             }
+            {isSubmitting ? (
+              <Loader2 className=" animate-spin size-4" />
+            ) : (
+              "Submit"
+            )}
           </Button>
         </form>
       </Form>
@@ -253,5 +260,5 @@ function QRCodeVerify({
         <QRCode size={256} value={totpURI} />
       </div>
     </div>
-  )
+  );
 }

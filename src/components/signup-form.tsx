@@ -28,7 +28,7 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2, LoaderCircle, ChevronDown } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
@@ -53,7 +53,7 @@ import {
 const formSchema = z.object({
   username: z
     .string()
-    .min(2, "Username must be greater than 2 characters!")
+    .min(6, "Username must be greater than 6 characters!")
     .max(50, "Username must be lesser than 50 characters!"),
   email: z.string().email("Please enter valid email!"),
   password: z
@@ -79,6 +79,8 @@ export function SignupForm({
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
   const [isGithubLoading, setIsGithubLoading] = useState<boolean>(false);
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,7 +101,6 @@ export function SignupForm({
         name: values.username,
         email: values.email,
         password: values.password,
-        // Add the additional fields here
         dateOfBirth: values.dateOfBirth,
         gender: values.gender,
       },
@@ -109,13 +110,8 @@ export function SignupForm({
           console.log("Error at sign up form : ", context.error);
         },
         onSuccess: async () => {
-          // Reset the form fields
           form.reset();
-
-          // Show the success toast
           toast.success("Sign up successful! 🎉 Please verify your email.");
-
-          // Switch to verification tab
           onSignupSuccess?.(values.email);
         },
       }
@@ -128,12 +124,12 @@ export function SignupForm({
 
     try {
       setLoading(true);
-      const { data, error } = await authClient.signIn.social(
+      await authClient.signIn.social(
         {
           provider: provider,
         },
         {
-          onSuccess(context) {
+          onSuccess() {
             toast.success(`Successfully signed up with ${provider}! ✨🎉`);
             router.push("/");
           },
@@ -142,8 +138,6 @@ export function SignupForm({
           },
         }
       );
-      console.log("Data : ", data);
-      console.log("Error : ", error);
     } catch (error) {
       console.log(
         `Error at the Signup form during ${provider} signup : `,
@@ -156,6 +150,63 @@ export function SignupForm({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const { unsubscribe } = form.watch((value, { name }) => {
+      if (name === "username") {
+        if (value.username && value.username?.length >= 6) {
+          // Clear previous timeout
+          clearTimeout(timeoutId);
+
+          // Reset states
+          setUsernameAvailable(false);
+          setIsCheckingUsername(true);
+
+          // Set new timeout
+          timeoutId = setTimeout(async () => {
+            console.log("Debounced value:", value.username);
+
+            try {
+              const response = await fetch(
+                `/api/check-availability?name=${value.username}`
+              );
+              const data: { success: boolean; message: string } =
+                await response.json();
+
+              console.log("Data : ", data);
+
+              if (!data.success) {
+                setUsernameAvailable(false);
+                form.setError("username", {
+                  type: "value",
+                  message: data.message,
+                });
+              } else {
+                form.clearErrors("username");
+                setUsernameAvailable(true);
+              }
+            } catch (error) {
+              console.error("Error checking username:", error);
+              toast.error("Failed to check username availability");
+            } finally {
+              setIsCheckingUsername(false);
+            }
+          }, 1200);
+        } else {
+          // Reset states when username is too short
+          setUsernameAvailable(false);
+          setIsCheckingUsername(false);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeoutId);
+    };
+  }, [form]);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -220,9 +271,27 @@ export function SignupForm({
                     <FormItem>
                       <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Input placeholder="username" {...field} />
+                        <div className="relative">
+                          <Input
+                            className={`${
+                              usernameAvailable && "border-2 border-green-400"
+                            }`}
+                            placeholder="username"
+                            {...field}
+                          />
+                          {isCheckingUsername && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
+                      {usernameAvailable && !isCheckingUsername && (
+                        <FormDescription className="text-green-600">
+                          ✓ Username is available!
+                        </FormDescription>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -357,7 +426,11 @@ export function SignupForm({
                 </div>
 
                 <Field>
-                  <Button disabled={isLoading} type="submit" className="w-full">
+                  <Button
+                    disabled={isLoading || !usernameAvailable}
+                    type="submit"
+                    className="w-full"
+                  >
                     {isLoading ? (
                       <LoaderCircle className="animate-spin size-4" />
                     ) : (

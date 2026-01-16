@@ -68,6 +68,9 @@ importers:
       drizzle-zod:
         specifier: ^0.8.3
         version: 0.8.3(drizzle-orm@0.45.1(@neondatabase/serverless@1.0.2)(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3))(zod@4.3.5)
+      es-toolkit:
+        specifier: ^1.44.0
+        version: 1.44.0
       lucide-react:
         specifier: ^0.562.0
         version: 0.562.0(react@19.2.3)
@@ -1882,6 +1885,9 @@ packages:
     resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
     engines: {node: '>=0.12'}
 
+  es-toolkit@1.44.0:
+    resolution: {integrity: sha512-6penXeZalaV88MM3cGkFZZfOoLGWshWWfdy0tWw/RlVVyhvMaWSBTOvXNeiW3e5FwdS5ePW0LGEu17zT139ktg==}
+
   esbuild-register@3.6.0:
     resolution: {integrity: sha512-H2/S7Pm8a9CL1uhp9OvjwrBh5Pvx0H8qVOxNu8Wed9Y7qv56MPtq+GGM8RJpq6glYJn9Wspr8uw7l55uyinNeg==}
     peerDependencies:
@@ -3602,6 +3608,8 @@ snapshots:
       tapable: 2.3.0
 
   entities@4.5.0: {}
+
+  es-toolkit@1.44.0: {}
 
   esbuild-register@3.6.0(esbuild@0.25.12):
     dependencies:
