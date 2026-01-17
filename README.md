@@ -10,7 +10,7 @@
   <p>Built with Next.js 16 and BetterAuth for production-ready authentication</p>
   
   [Features](#-features) •
-  [Demo](#-demo) •
+  [Tech Stack](#-tech-stack) •
   [Installation](#-installation) •
   [Documentation](#-documentation) •
   [Contributing](#-contributing)
@@ -38,6 +38,7 @@
         <li>Backup codes for 2FA</li>
         <li>Secure session management</li>
         <li>Password strength validation</li>
+        <li>CSRF protection & Rate limiting</li>
       </ul>
     </td>
   </tr>
@@ -57,35 +58,11 @@
         <li>Email verification</li>
         <li>Password reset emails</li>
         <li>Transactional notifications</li>
-        <li>Custom email templates</li>
+        <li>Custom email templates with React Email</li>
       </ul>
     </td>
   </tr>
 </table>
-
-## 🎯 Demo
-
-> 🚀 **[Live Demo](https://your-demo-url.com)**
-
-### Screenshots
-
-<details>
-<summary>Click to expand screenshots</summary>
-
-#### Login & Signup
-
-![Login Page](https://via.placeholder.com/800x400?text=Login+Page)
-![Signup Page](https://via.placeholder.com/800x400?text=Signup+Page)
-
-#### Two-Factor Authentication
-
-![2FA Setup](https://via.placeholder.com/800x400?text=2FA+Setup)
-
-#### User Dashboard
-
-![Dashboard](https://via.placeholder.com/800x400?text=Dashboard)
-
-</details>
 
 ## 🛠️ Tech Stack
 
@@ -94,13 +71,14 @@
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
 ### Backend & Database
 
 ![Better Auth](https://img.shields.io/badge/Better_Auth-4B32C3?style=for-the-badge)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)
+![Neon](https://img.shields.io/badge/Neon-00E599?style=for-the-badge&logo=neon&logoColor=white)
 
 ### Authentication & OAuth
 
@@ -112,7 +90,8 @@
 ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
 ![React Hook Form](https://img.shields.io/badge/React_Hook_Form-EC5990?style=for-the-badge&logo=reacthookform&logoColor=white)
 ![Resend](https://img.shields.io/badge/Resend-000000?style=for-the-badge&logo=resend&logoColor=white)
-![Sonner](https://img.shields.io/badge/Sonner-F59E0B?style=for-the-badge)
+![React Email](https://img.shields.io/badge/React_Email-000000?style=for-the-badge&logo=react&logoColor=white)
+![Arcjet](https://img.shields.io/badge/Arcjet-6366F1?style=for-the-badge)
 ![PNPM](https://img.shields.io/badge/PNPM-F69220?style=for-the-badge&logo=pnpm&logoColor=white)
 
 ## 📦 Installation
@@ -123,7 +102,7 @@ Before you begin, ensure you have the following installed:
 
 - **Node.js** 18+ or **Bun**
 - **PNPM** package manager
-- **PostgreSQL** database (local or cloud)
+- **PostgreSQL** database (local or cloud - Neon recommended)
 - **GitHub OAuth App** (for GitHub login)
 - **Google OAuth App** (for Google login)
 - **Resend Account** (for emails)
@@ -133,8 +112,8 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/better-auth.git
-   cd better-auth
+   git clone https://github.com/Yosf96633/Better_auth_starter.git
+   cd Better_auth_starter
    ```
 
 2. **Install dependencies**
@@ -158,7 +137,7 @@ Before you begin, ensure you have the following installed:
    DATABASE_URL="postgresql://user:password@localhost:5432/better_auth"
 
    # Auth Configuration
-   AUTH_SECRET="your-secret-key-min-32-chars"
+   BETTER_AUTH_SECRET="your-secret-key-min-32-chars"
    BETTER_AUTH_URL="http://localhost:3000"
 
    # GitHub OAuth
@@ -171,35 +150,42 @@ Before you begin, ensure you have the following installed:
 
    # Resend (Email Service)
    RESEND_API_KEY="your-resend-api-key"
+
+   # Arcjet (Rate Limiting & Security)
+   ARCJET_KEY="your-arcjet-key"
    ```
 
-4. **Run database migrations**
+4. **Generate database schema**
 
    ```bash
-   pnpm drizzle:migrate
+   pnpm db:generate
    ```
 
-5. **Start the development server**
+5. **Push schema to database**
+
+   ```bash
+   pnpm db:push
+   ```
+
+6. **Start the development server**
 
    ```bash
    pnpm dev
    ```
 
-6. **Open your browser**
+7. **Open your browser**
 
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🗂️ Project Structure
 
 ```
-better-auth/
+better-auth-starter/
 ├── src/
 │   ├── app/                      # Next.js App Router
 │   │   ├── (authentication)/     # Auth route group
 │   │   │   ├── auth/            # Auth pages
 │   │   │   │   ├── login/       # Login page
-│   │   │   │   ├── signup/      # Signup page
-│   │   │   │   ├── verify-email/ # Email verification
 │   │   │   │   ├── reset-password/ # Password reset
 │   │   │   │   └── 2fa/         # Two-factor auth setup
 │   │   │   └── profile/         # User profile & settings
@@ -216,7 +202,6 @@ better-auth/
 │   │   │   ├── input.tsx
 │   │   │   ├── card.tsx
 │   │   │   └── ...
-│   │   ├── auth-forms/         # Authentication forms
 │   │   │   ├── login-form.tsx
 │   │   │   ├── signup-form.tsx
 │   │   │   └── ...
@@ -234,10 +219,10 @@ better-auth/
 │   │   └── migrations/         # Database migrations
 │   │
 │   ├── emails/                  # Email templates
-│   │   ├── verification-email.tsx
-│   │   └── reset-password-email.tsx
-│   │
-│   └── types/                   # TypeScript types
+│      ├── verification-email.tsx
+│      └── reset-password-email.tsx
+│   
+│   
 │
 ├── public/                      # Static assets
 ├── drizzle.config.ts           # Drizzle configuration
@@ -384,11 +369,21 @@ const handleSignOut = async () => {
 
 </details>
 
+<details>
+<summary><b>Arcjet Security</b></summary>
+
+1. Sign up at [Arcjet](https://arcjet.com/)
+2. Create a new site
+3. Copy your API key
+4. Add to `.env.local`
+
+</details>
+
 ## 🎨 Customization
 
 ### Styling
 
-The project uses Tailwind CSS with custom components. Modify the theme in `tailwind.config.ts`:
+The project uses Tailwind CSS 4 with custom components. Modify the theme in `tailwind.config.ts`:
 
 ```typescript
 theme: {
@@ -404,57 +399,53 @@ theme: {
 
 ### Email Templates
 
-Email templates are located in `src/emails/`. Customize them using React:
+Email templates are located in `src/emails/` and built with React Email. Customize them using React components:
 
 ```tsx
 // src/emails/verification-email.tsx
 export const VerificationEmail = ({ verificationUrl }: Props) => {
-  return <div>{/* Your custom email template */}</div>;
+  return (
+    <Html>
+      <Body>{/* Your custom email template */}</Body>
+    </Html>
+  );
 };
 ```
-
-## 🧪 Testing
-
-```bash
-# Run unit tests
-pnpm test
-
-# Run e2e tests
-pnpm test:e2e
-
-# Run tests in watch mode
-pnpm test:watch
-```
-
-## 📊 Performance
-
-- **Lighthouse Score**: 95+ (Performance, Accessibility, Best Practices, SEO)
-- **First Contentful Paint**: < 1.5s
-- **Time to Interactive**: < 3s
-- **Bundle Size**: Optimized with Next.js 16 and Turbopack
 
 ## 🛡️ Security Features
 
 - ✅ Password hashing with bcrypt
 - ✅ CSRF protection
-- ✅ Rate limiting on auth endpoints
+- ✅ Rate limiting with Arcjet
 - ✅ Secure session management
 - ✅ Email verification required
 - ✅ Optional 2FA with TOTP
 - ✅ Secure password reset flow
+- ✅ Account linking validation
+- ✅ IP-based security checks
 
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/better-auth)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Yosf96633/Better_auth_starter)
 
 1. Push your code to GitHub
 2. Import project in Vercel
 3. Add environment variables
 4. Deploy
 
-```
+### Environment Variables for Production
+
+Make sure to set all environment variables in your deployment platform:
+
+- `DATABASE_URL`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`
+- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`
+- `RESEND_API_KEY`
+- `ARCJET_KEY`
 
 ## 🤝 Contributing
 
@@ -466,7 +457,7 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and development process.
 
 ## 📄 License
 
@@ -479,34 +470,39 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Drizzle ORM](https://orm.drizzle.team/) - TypeScript ORM
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [Resend](https://resend.com/) - Email for developers
+- [React Email](https://react.email/) - Email templates with React
 - [shadcn/ui](https://ui.shadcn.com/) - Re-usable components
+- [Arcjet](https://arcjet.com/) - Security and rate limiting
 
 ## 📞 Support
 
 - 📧 Email: yousaf.dev18@gmail.com
 - 🐛 Issues: [GitHub Issues](https://github.com/Yosf96633/Better_auth_starter/issues)
+- 💼 LinkedIn: [Yousaf Ahmed](https://www.linkedin.com/in/yousaf-dev18/)
 
 ## 🗺️ Roadmap
 
 - [ ] Magic link authentication
-- [ ] Social login (Twitter, LinkedIn)
-- [ ] Organization, Passkey and Admin Plugins
+- [ ] Social login (Twitter, LinkedIn, Discord)
+- [ ] Organization & Team management
+- [ ] Passkey authentication (WebAuthn)
+- [ ] Admin dashboard plugin
 - [ ] Account activity logs
 - [ ] Advanced session management
-- [ ] Passwordless authentication improvements
+- [ ] Multi-language support
 - [ ] Dark mode support
 
 ---
 
 <div align="center">
-  <p>Made with ❤️ by <a href="https://github.com/yourusername">Your Name</a></p>
+  <p>Made with ❤️ by <a href="https://github.com/Yosf96633">Yousaf Ahmed</a></p>
   
   <p>
     <a href="https://github.com/Yosf96633/Better_auth_starter">⭐ Star this repo</a> •
-    <a href="www.linkedin.com/in/yousaf-dev18">💼 Connect on LinkedIn</a>
+    <a href="https://www.linkedin.com/in/yousaf-dev18/">💼 Connect on LinkedIn</a>
   </p>
   
-  ![GitHub stars](https://img.shields.io/github/stars/yourusername/better-auth?style=social)
-  ![GitHub forks](https://img.shields.io/github/forks/yourusername/better-auth?style=social)
-  ![GitHub watchers](https://img.shields.io/github/watchers/yourusername/better-auth?style=social)
+  ![GitHub stars](https://img.shields.io/github/stars/Yosf96633/Better_auth_starter?style=social)
+  ![GitHub forks](https://img.shields.io/github/forks/Yosf96633/Better_auth_starter?style=social)
+  ![GitHub watchers](https://img.shields.io/github/watchers/Yosf96633/Better_auth_starter?style=social)
 </div>
