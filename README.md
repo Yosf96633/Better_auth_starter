@@ -455,13 +455,8 @@ Contributions are welcome! Please follow these steps:
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+5. Open a Pull Request 
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and development process.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -478,7 +473,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - 📧 Email: yousaf.dev18@gmail.com
 - 🐛 Issues: [GitHub Issues](https://github.com/Yosf96633/Better_auth_starter/issues)
-- 💼 LinkedIn: [Yousaf Ahmed](https://www.linkedin.com/in/yousaf-dev18/)
+- 💼 LinkedIn: [Yousaf](https://www.linkedin.com/in/yousaf-dev18/)
 
 ## 🗺️ Roadmap
 
@@ -489,13 +484,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Admin dashboard plugin
 - [ ] Account activity logs
 - [ ] Advanced session management
-- [ ] Multi-language support
-- [ ] Dark mode support
 
 ---
 
 <div align="center">
-  <p>Made with ❤️ by <a href="https://github.com/Yosf96633">Yousaf Ahmed</a></p>
+  <p>Made with ❤️ by <a href="https://github.com/Yosf96633">Yousaf</a></p>
   
   <p>
     <a href="https://github.com/Yosf96633/Better_auth_starter">⭐ Star this repo</a> •
