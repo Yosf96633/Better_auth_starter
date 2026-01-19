@@ -6,6 +6,7 @@ import * as schema from "@/db/auth-schema";
 import { sendEmailVerification, sendPasswordReset } from "./emails/email";
 import { toast } from "sonner";
 import { twoFactor } from "better-auth/plugins";
+import { passkey } from "@better-auth/passkey";
 export const auth = betterAuth({
   user: {
     deleteUser: {
@@ -46,7 +47,7 @@ export const auth = betterAuth({
       } catch (error) {
         console.log(
           "Error in auth.ts sendPasswordReset function in catch block : ",
-          error
+          error,
         );
         toast.error(`Error while  sending Reset password email!`);
       }
@@ -61,14 +62,14 @@ export const auth = betterAuth({
         if (!success) {
           console.log(
             "Error in auth.ts sendVerificationEmail function : ",
-            data
+            data,
           );
           toast.error(`Error while sending verification email!`);
         }
       } catch (error) {
         console.log(
           "Error in auth.ts sendVerificationEmail function in catch block : ",
-          error
+          error,
         );
         toast.error(`Error while sending verification email!`);
       }
@@ -90,5 +91,5 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
-  plugins: [nextCookies() , twoFactor()],
+  plugins: [nextCookies(), twoFactor(), passkey()],
 });

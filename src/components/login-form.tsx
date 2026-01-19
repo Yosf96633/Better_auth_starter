@@ -36,6 +36,7 @@ import { APIError } from "better-auth";
 import { GoogleIcon } from "@/icons/GoogleIcon";
 import { GithubIcon } from "@/icons/GithubIcon";
 import { Separator } from "./ui/separator";
+import { PasskeyButton } from "./passkey-button";
 
 const formSchema = z.object({
   email: z.string().email("Please enter valid email!"),
@@ -100,7 +101,7 @@ export function LoginForm({
             router.push("/");
           }, 1500);
         },
-      }
+      },
     );
   };
 
@@ -122,14 +123,14 @@ export function LoginForm({
           onError(context) {
             toast.error(context.error.message);
           },
-        }
+        },
       );
       console.log("Data : ", data);
       console.log("Error : ", error);
     } catch (error) {
       console.log(
         `Error at the Signup form during ${provider} signup : `,
-        error
+        error,
       );
       if (error instanceof APIError) {
         toast.error(error.message);
@@ -267,20 +268,21 @@ export function LoginForm({
                       "Login"
                     )}
                   </Button>
-                  <FieldDescription className="text-center">
-                    Don&apos;t have an account?{" "}
-                    <button
-                      type="button"
-                      onClick={onSwitchToSignup}
-                      className="underline underline-offset-4 hover:text-primary"
-                    >
-                      Sign up
-                    </button>
-                  </FieldDescription>
                 </Field>
               </FieldGroup>
             </form>
           </Form>
+          <PasskeyButton />
+          <FieldDescription className="text-center">
+            Don&apos;t have an account?{" "}
+            <button
+              type="button"
+              onClick={onSwitchToSignup}
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Sign up
+            </button>
+          </FieldDescription>
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">

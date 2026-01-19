@@ -23,6 +23,7 @@ import SetPassword from "./_components/set-password";
 import Set_session_Tab from "./_components/setSession";
 import { AccountLinking } from "./_components/account-linking";
 import TwoAuthFactor from "./_components/twoAuthFactor";
+import { PasskeyManagement } from "./_components/passkeys-managment";
 export default async function ProfilePage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -131,19 +132,32 @@ const SecurityTab = async ({
   email: string;
   isTwoFactorEnable: boolean;
 }) => {
-  const accounts = await auth.api.listUserAccounts({
-    headers: await headers(),
-  });
-  const hasPasswordAccount = accounts.some(
-    (account) => account.providerId === "credential"
-  );
+  const [accounts, passkeys] = await Promise.all([
+    await auth.api.listUserAccounts({
+      headers: await headers(),
+    }),
+    await auth.api.listPasskeys({
+      headers: await headers(),
+    }),
+  ]);
 
+  const hasPasswordAccount = accounts.some(
+    (account) => account.providerId === "credential",
+  );
   return (
     <div>
       {hasPasswordAccount ? <ChangePassword /> : <SetPassword email={email} />}
       {hasPasswordAccount && (
         <TwoAuthFactor isTwoFactorEnable={isTwoFactorEnable} />
       )}
+      <Card className="w-full max-w-md mx-auto" >
+        <CardHeader>
+          <CardTitle>Passkeys</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PasskeyManagement passkeys={passkeys}/>
+        </CardContent>
+      </Card>
     </div>
   );
 };
