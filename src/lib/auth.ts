@@ -5,7 +5,7 @@ import { db } from "@/db"; // your drizzle instance
 import * as schema from "@/db/auth-schema";
 import { sendEmailVerification, sendPasswordReset } from "./emails/email";
 import { toast } from "sonner";
-import { twoFactor } from "better-auth/plugins";
+import { admin, twoFactor } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 export const auth = betterAuth({
   user: {
@@ -78,7 +78,7 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 10 * 60, // 10 mintues
+      maxAge: 1 * 60, // 1 mintues
     },
   },
   socialProviders: {
@@ -91,5 +91,12 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
-  plugins: [nextCookies(), twoFactor(), passkey()],
+  plugins: [
+    nextCookies(),
+    twoFactor(),
+    passkey(),
+    admin({
+      defaultRole: "user",
+    }),
+  ],
 });

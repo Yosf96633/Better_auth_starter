@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { APIError } from "better-auth";
-import { Loader2, LogOut, User } from "lucide-react";
+import { Loader2, LogOut, User, UserStar } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,11 +11,46 @@ import { toast } from "sonner";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [hasPermission, setHasPermission] = useState<boolean>(false);
   const router = useRouter();
   const { data: session, isPending, error } = authClient.useSession();
+  const handleSignOut = async () => {
+    try {
+      setIsLoading(true);
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess() {
+            router.push("/auth/login");
+          },
+          onError(context) {
+            toast.error(context.error.message);
+          },
+        },
+      });
+    } catch (error) {
+      console.log("Error during signout in homePage : ", error);
+      if (error instanceof APIError) {
+        toast.error(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
-    console.log("User sessions: ", session);
-  }, [session]);
+    authClient.admin
+      .hasPermission({
+        permission: {
+          user: ["list"],
+        },
+      })
+      .then(({ data }) => {
+        setHasPermission(data?.success ?? false);
+      })
+      .catch((error) => {
+        console.error("Permission check failed:", error);
+        setHasPermission(false);
+      });
+  }, []);
   if (isPending) {
     return (
       <div className="h-dvh w-dvw grid place-content-center">
@@ -39,28 +74,6 @@ export default function Home() {
   if (error) {
     return <div>Error: {error.message}</div>;
   }
-  const handleSignOut = async () => {
-    try {
-      setIsLoading(true);
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess() {
-            router.push("/auth/login");
-          },
-          onError(context) {
-            toast.error(context.error.message);
-          },
-        },
-      });
-    } catch (error) {
-      console.log("Error during signout in homePage : ", error);
-      if (error instanceof APIError) {
-        toast.error(error.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
   return (
     <div className="h-dvh w-dvw grid place-content-center">
       <div className=" text-center space-y-5">
@@ -70,8 +83,8 @@ export default function Home() {
               className=" rounded-full"
               src={session?.user.image || ""}
               alt=""
-              width={100}
-              height={100}
+              width={150}
+              height={150}
             />
           )}
         </div>
@@ -92,6 +105,15 @@ export default function Home() {
               Profile
             </Button>
           </Link>
+
+          {hasPermission && (
+            <Link href={"/admin"}>
+              <Button className=" cursor-pointer">
+                <UserStar />
+                Admin
+              </Button>
+            </Link>
+          )}
 
           <Button
             disabled={isLoading}

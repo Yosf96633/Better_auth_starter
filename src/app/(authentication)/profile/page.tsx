@@ -24,6 +24,7 @@ import Set_session_Tab from "./_components/setSession";
 import { AccountLinking } from "./_components/account-linking";
 import TwoAuthFactor from "./_components/twoAuthFactor";
 import { PasskeyManagement } from "./_components/passkeys-managment";
+import { Badge } from "@/components/ui/badge";
 export default async function ProfilePage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -45,14 +46,15 @@ export default async function ProfilePage() {
             className=" rounded-full border-2 border-black"
             src={session.user.image || "/placeholder.jpg"}
             alt={session.user.name}
-            width={60}
-            height={60}
+            width={90}
+            height={90}
           />
           <div className="">
             <h1 className=" font-bold text-black text-3xl">
               {session.user.name}
             </h1>
             <p>{session.user.email}</p>
+            <Badge>{session.user.role}</Badge>
           </div>
         </div>
       </div>
