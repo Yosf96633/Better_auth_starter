@@ -22,6 +22,8 @@ const EmailVerification = ({
   userName = "there",
   companyName = "BrandApp",
 }: EmailVerificationProps) => {
+  const baseURL = process.env.NEXT_PUBLIC_URL! as string;
+
   return (
     <Html lang="en" dir="ltr">
       <Tailwind>
@@ -32,7 +34,7 @@ const EmailVerification = ({
               {/* Logo */}
               <Section className="text-center mb-[24px]">
                 <Img
-                  src="https://placehold.co/56x56/1a1a1a/white?text=BA"
+                  src={`${baseURL}/logo.png`}
                   alt="Company Logo"
                   width="56"
                   height="56"
@@ -62,8 +64,8 @@ const EmailVerification = ({
                   href={verificationLink}
                   className="bg-[#1a1a1a] text-white px-[32px] py-[14px] rounded-[28px] text-[16px] font-semibold no-underline inline-block"
                   style={{
-                    textDecoration: 'none',
-                    display: 'inline-block',
+                    textDecoration: "none",
+                    display: "inline-block",
                   }}
                 >
                   Confirm Email

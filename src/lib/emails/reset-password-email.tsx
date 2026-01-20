@@ -25,6 +25,7 @@ const PasswordReset = ({
   expirationTime = "1 hour",
   companyName = "BrandApp",
 }: PasswordResetProps) => {
+  const baseURL = process.env.NEXT_PUBLIC_URL! as string;
   return (
     <Html lang="en" dir="ltr">
       <Tailwind>
@@ -35,7 +36,7 @@ const PasswordReset = ({
               {/* Logo */}
               <Section className="text-center mb-[24px]">
                 <Img
-                  src="https://placehold.co/56x56/1a1a1a/white?text=BA"
+                  src={`${baseURL}/logo.png`}
                   alt="Company Logo"
                   width="56"
                   height="56"
@@ -65,8 +66,8 @@ const PasswordReset = ({
                   href={resetLink}
                   className="bg-[#1a1a1a] text-white px-[32px] py-[14px] rounded-[28px] text-[16px] font-semibold no-underline inline-block"
                   style={{
-                    textDecoration: 'none',
-                    display: 'inline-block',
+                    textDecoration: "none",
+                    display: "inline-block",
                   }}
                 >
                   Reset Password
