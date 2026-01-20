@@ -1,8 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import { APIError } from "better-auth";
-import { Loader2, LogOut, User, UserStar } from "lucide-react";
+import { Loader2, LogOut, User, UserStar, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ export default function Home() {
   const [hasPermission, setHasPermission] = useState<boolean>(false);
   const router = useRouter();
   const { data: session, isPending, error } = authClient.useSession();
+
   const handleSignOut = async () => {
     try {
       setIsLoading(true);
@@ -36,6 +38,7 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     authClient.admin
       .hasPermission({
@@ -51,81 +54,117 @@ export default function Home() {
         setHasPermission(false);
       });
   }, []);
+
   if (isPending) {
     return (
-      <div className="h-dvh w-dvw grid place-content-center">
-        <div className="flex space-x-3 items-center justify-center text-gray-400">
-          <Loader2 className="animate-spin size-8" />
-          <h1 className="text-4xl font-semibold">Loading...</h1>
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-slate-600 dark:text-slate-400" />
+          <p className="text-lg text-slate-600 dark:text-slate-400">
+            Loading...
+          </p>
         </div>
       </div>
     );
   }
+
   if (!session) {
     return (
-      <div className="h-dvh w-dvw grid place-content-center">
-        <h1 className="text-4xl font-semibold">
-          <Link href={"/auth/login"}>Login</Link>
-        </h1>
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="pt-6 text-center">
+            <p className="text-slate-600 dark:text-slate-400 mb-4">
+              You need to be logged in to access this page
+            </p>
+            <Link href="/auth/login">
+              <Button className="w-full">Go to Login</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+        <Card className="w-full max-w-md mx-4 border-red-200 dark:border-red-900">
+          <CardContent className="pt-6 text-center">
+            <p className="text-red-600 dark:text-red-400">
+              Error: {error.message}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
+
   return (
-    <div className="h-dvh w-dvw grid place-content-center">
-      <div className=" text-center space-y-5">
-        <div className=" flex justify-center items-center">
-          {session?.user.image && (
-            <Image
-              className=" rounded-full"
-              src={session?.user.image || ""}
-              alt=""
-              width={150}
-              height={150}
-            />
-          )}
-        </div>
-        <h1 className=" text-2xl font-semibold">
-          Welcome back,{" "}
-          <span className=" text-3xl font-bold">{session?.user?.name}</span>!
-        </h1>
-        <div>
-          <Link className=" my-4" href={"/dashboard"}>
-            Go to dashboard
-          </Link>
-        </div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4">
+      <Card className="w-full max-w-lg shadow-lg">
+        <CardHeader className="text-center pb-4">
+          <div className="flex justify-center mb-4">
+            {session?.user.image ? (
+              <div className="relative">
+                <Image
+                  className="rounded-full ring-4 ring-slate-200 dark:ring-slate-800"
+                  src={session.user.image}
+                  alt={session.user.name || "User avatar"}
+                  width={120}
+                  height={120}
+                />
+              </div>
+            ) : (
+              <div className="h-[120px] w-[120px] rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center ring-4 ring-slate-200 dark:ring-slate-800">
+                <User className="h-16 w-16 text-slate-500 dark:text-slate-400" />
+              </div>
+            )}
+          </div>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            Welcome back,
+          </h1>
+          <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400 bg-clip-text text-transparent">
+            {session.user.name || "User"}
+          </p>
+        </CardHeader>
 
-        <div className=" flex gap-4 justify-center">
-          <Link href={"/profile"}>
-            <Button className=" cursor-pointer" variant={"outline"}>
-              <User />
-              Profile
-            </Button>
-          </Link>
-
-          {hasPermission && (
-            <Link href={"/admin"}>
-              <Button className=" cursor-pointer">
-                <UserStar />
-                Admin
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/profile" className="block">
+              <Button className="w-full" variant="outline" size="lg">
+                <User className="mr-2 h-4 w-4" />
+                Profile
               </Button>
             </Link>
-          )}
+
+            {hasPermission && (
+              <Link href="/admin" className="block">
+                <Button className="w-full" variant="secondary" size="lg">
+                  <UserStar className="mr-2 h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
+            )}
+
+            {!hasPermission && <div />}
+          </div>
 
           <Button
-            disabled={isLoading}
             onClick={handleSignOut}
-            className=" cursor-pointer"
-            variant={"destructive"}
+            disabled={isLoading}
+            className="w-full"
+            variant="destructive"
+            size="lg"
           >
-            {isLoading ? <Loader2 className=" animate-spin" /> : <LogOut />}
-            Sign out
+            {isLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="mr-2 h-4 w-4" />
+            )}
+            Sign Out
           </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

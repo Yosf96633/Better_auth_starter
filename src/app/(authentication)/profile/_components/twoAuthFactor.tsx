@@ -1,6 +1,6 @@
 "use client";
+
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -16,15 +16,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Loader2, LoaderCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, Shield, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 
 type TwoFactorData = { totpURI: string; backupCodes: string[] };
+
 const twoFactorAuthSchema = z.object({
-  password: z.string(),
+  password: z.string().min(1, "Password is required"),
 });
+
 const TwoAuthFactor = ({
   isTwoFactorEnable,
 }: {
@@ -43,15 +45,16 @@ const TwoAuthFactor = ({
   const [twoFactorData, setTwoFactorData] = useState<TwoFactorData | null>(
     null
   );
+
   const handleEnableTwoFactorAuth = async (
     values: z.infer<typeof twoFactorAuthSchema>
   ) => {
     const result = await authClient.twoFactor.enable({
       password: values.password,
     });
-    console.log("Enable two factor authentication : ", result);
+
     if (result.error) {
-      toast.error(result.error.message);
+      toast.error(result.error.message || "Failed to enable 2FA");
       form.reset();
     } else {
       setTwoFactorData(result.data);
@@ -68,12 +71,12 @@ const TwoAuthFactor = ({
       },
       {
         onSuccess() {
-          toast.success(`Disable 2FA successfully`);
+          toast.success("Two-factor authentication disabled");
           router.refresh();
         },
         onError: async (ctx) => {
           form.reset();
-          toast.error(ctx.error.message);
+          toast.error(ctx.error.message || "Failed to disable 2FA");
         },
       }
     );
@@ -84,84 +87,100 @@ const TwoAuthFactor = ({
       <QRCodeVerify onDone={() => setTwoFactorData(null)} {...twoFactorData} />
     );
   }
-  return (
-    <div className=" flex justify-center p-4 items-center">
-      <Card className="w-full max-w-md">
-        <CardHeader className=" flex justify-between">
-          <CardTitle>Two Factor Authentication</CardTitle>
-          <Badge variant={isTwoFactorEnable ? "default" : "secondary"}>
-            {isTwoFactorEnable ? "Enable" : "Disable"}
-          </Badge>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(
-                isTwoFactorEnable
-                  ? handleDisableTwoFactorAuth
-                  : handleEnableTwoFactorAuth
-              )}
-              className="space-y-4"
-            >
-              {/* Current Password */}
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showCurrentPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
-                        >
-                          {showCurrentPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">
-                            {showCurrentPassword
-                              ? "Hide password"
-                              : "Show password"}
-                          </span>
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <Button
-                disabled={isLoading}
-                variant={isTwoFactorEnable ? "destructive" : "default"}
-                type="submit"
-                className="w-full"
-              >
-                {isLoading ? (
-                  <LoaderCircle className="animate-spin size-4" />
-                ) : isTwoFactorEnable ? (
-                  "Disable 2FA"
-                ) : (
-                  "Enable 2FA"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+        <Shield className="h-5 w-5 text-slate-600 dark:text-slate-400 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+              Two-Factor Authentication
+            </p>
+            <Badge variant={isTwoFactorEnable ? "default" : "secondary"} className="text-xs">
+              {isTwoFactorEnable ? "Enabled" : "Disabled"}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {isTwoFactorEnable
+              ? "Your account is protected with 2FA"
+              : "Add an extra layer of security to your account"}
+          </p>
+        </div>
+      </div>
+
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(
+            isTwoFactorEnable
+              ? handleDisableTwoFactorAuth
+              : handleEnableTwoFactorAuth
+          )}
+          className="space-y-4"
+        >
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showCurrentPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isLoading}
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                      tabIndex={-1}
+                    >
+                      {showCurrentPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="sr-only">
+                        {showCurrentPassword
+                          ? "Hide password"
+                          : "Show password"}
+                      </span>
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button
+            disabled={isLoading}
+            variant={isTwoFactorEnable ? "destructive" : "default"}
+            type="submit"
+            className="w-full"
+            size="lg"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isTwoFactorEnable ? "Disabling..." : "Enabling..."}
+              </>
+            ) : isTwoFactorEnable ? (
+              "Disable 2FA"
+            ) : (
+              "Enable 2FA"
+            )}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 };
@@ -169,16 +188,21 @@ const TwoAuthFactor = ({
 export default TwoAuthFactor;
 
 const qrSchema = z.object({
-  token: z.string().length(6),
+  token: z
+    .string()
+    .length(6, "Code must be 6 digits")
+    .regex(/^\d+$/, "Code must only contain numbers"),
 });
 
 type QrForm = z.infer<typeof qrSchema>;
+
 function QRCodeVerify({
   totpURI,
   backupCodes,
   onDone,
 }: TwoFactorData & { onDone: () => void }) {
   const [successfullyEnabled, setSuccessfullyEnabled] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const router = useRouter();
   const form = useForm<QrForm>({
     resolver: zodResolver(qrSchema),
@@ -194,42 +218,71 @@ function QRCodeVerify({
       },
       {
         onError: (error) => {
-          toast.error(error.error.message || "Failed to verify code");
+          toast.error(error.error.message || "Invalid code. Please try again.");
         },
         onSuccess: () => {
           setSuccessfullyEnabled(true);
+          toast.success("Two-factor authentication enabled!");
           router.refresh();
         },
       }
     );
   }
 
+  const copyCode = async (code: string) => {
+    await navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
   if (successfullyEnabled) {
     return (
-      <>
-        <p className="text-sm text-muted-foreground mb-2">
-          Save these backup codes in a safe place. You can use them to access
-          your account.
-        </p>
-        <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="space-y-4">
+        <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
+          <p className="text-sm font-medium text-green-900 dark:text-green-100 mb-1">
+            Two-factor authentication enabled!
+          </p>
+          <p className="text-sm text-green-700 dark:text-green-300">
+            Save these backup codes in a safe place. You can use them to access your account if you lose access to your authenticator app.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
           {backupCodes.map((code, index) => (
-            <div key={index} className="font-mono text-sm">
+            <Button
+              key={index}
+              variant="outline"
+              className="font-mono text-sm justify-between h-auto py-2.5"
+              onClick={() => copyCode(code)}
+            >
               {code}
-            </div>
+              {copiedCode === code ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
           ))}
         </div>
-        <Button variant="outline" onClick={onDone}>
+
+        <Button variant="default" onClick={onDone} className="w-full" size="lg">
           Done
         </Button>
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-muted-foreground">
-        Scan this QR code with your authenticator app and enter the code below:
-      </p>
+    <div className="space-y-6">
+      <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
+        <p className="text-sm text-blue-900 dark:text-blue-100">
+          Scan this QR code with your authenticator app (such as Google Authenticator or Authy), then enter the 6-digit code below to complete setup.
+        </p>
+      </div>
+
+      <div className="flex justify-center p-6 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800">
+        <QRCode size={200} value={totpURI} />
+      </div>
 
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(handleQrCode)}>
@@ -238,27 +291,36 @@ function QRCodeVerify({
             name="token"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Code</FormLabel>
+                <FormLabel>Verification Code</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input
+                    placeholder="000000"
+                    className="text-center text-lg tracking-widest font-mono"
+                    maxLength={6}
+                    disabled={isSubmitting}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
+                <p className="text-xs text-muted-foreground text-center">
+                  Enter the 6-digit code from your authenticator app
+                </p>
               </FormItem>
             )}
           />
 
-          <Button type="submit" disabled={isSubmitting} className="w-full">
+          <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
             {isSubmitting ? (
-              <Loader2 className=" animate-spin size-4" />
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Verifying...
+              </>
             ) : (
-              "Submit"
+              "Verify & Enable"
             )}
           </Button>
         </form>
       </Form>
-      <div className="p-4 bg-white w-fit text-center">
-        <QRCode size={256} value={totpURI} />
-      </div>
     </div>
   );
 }

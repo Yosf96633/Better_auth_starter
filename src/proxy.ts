@@ -10,14 +10,11 @@ export async function proxy(request: NextRequest) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (session && isAuthPage) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
   if (!session) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
   return NextResponse.next();
 }
 export const config = {
-  matcher: ["/dashboard"],
+  matcher: [""],
 };

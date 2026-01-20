@@ -1,16 +1,10 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Loader2, Mail, Clock } from "lucide-react";
 
 const COOLDOWN_SECONDS = 60;
 
@@ -62,32 +56,50 @@ const SetPassword = ({ email }: { email: string }) => {
   }, [cooldown]);
 
   return (
-    <Card className="w-full mx-auto max-w-md">
-      <CardHeader>
-        <CardTitle className="text-2xl">Reset Password</CardTitle>
-        <CardDescription>
-          We'll send a password reset link to <strong>{email}</strong>
-        </CardDescription>
-      </CardHeader>
+    <div className="space-y-6">
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
+        <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+            No password set
+          </p>
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            We'll send a password reset link to{" "}
+            <span className="font-medium">{email}</span>
+          </p>
+        </div>
+      </div>
 
-      <CardContent>
-        <p className="text-sm text-muted-foreground mb-4">
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
           Click the button below to receive a password reset link. Check your inbox and follow the instructions to set a new password.
         </p>
 
         <Button
           onClick={handleSetPassword}
           className="w-full"
+          size="lg"
           disabled={cooldown > 0 || loading}
         >
-          {loading
-            ? "Sending..."
-            : cooldown > 0
-            ? `Resend in ${cooldown}s`
-            : "Send Reset Link"}
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : cooldown > 0 ? (
+            <>
+              <Clock className="mr-2 h-4 w-4" />
+              Resend in {cooldown}s
+            </>
+          ) : (
+            <>
+              <Mail className="mr-2 h-4 w-4" />
+              Send Reset Link
+            </>
+          )}
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
