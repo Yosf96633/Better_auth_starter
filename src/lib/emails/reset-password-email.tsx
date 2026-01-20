@@ -91,7 +91,7 @@ const PasswordReset = ({
               <Text className="text-[14px] sm:text-[15px] text-[#666666] text-center mt-[8px] mb-0 leading-[1.5]">
                 Thanks,
                 <br />
-                The {companyName} Team
+                The {companyName}
               </Text>
 
               {/* Security Notice */}
