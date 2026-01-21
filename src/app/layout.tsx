@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ImpersonationIndicator } from "@/components/stop-impersonate";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Better Auth",
+  title: "Better Auth - Secure Authentication",
+  description: "Modern authentication system with advanced security features",
 };
 
 export default function RootLayout({
@@ -24,13 +27,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable}  selection:text-white selection:bg-black antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans selection:bg-blue-600 selection:text-white antialiased`}
       >
         {children}
-        <Toaster position='top-center'/>
-        <ImpersonationIndicator/>
+        <Toaster 
+          position="top-center" 
+          richColors 
+          closeButton
+          toastOptions={{
+            classNames: {
+              toast: "font-sans",
+              title: "font-medium",
+              description: "text-sm",
+            },
+          }}
+        />
+        <ImpersonationIndicator />
       </body>
     </html>
   );

@@ -123,7 +123,7 @@ export default function Home() {
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
             Welcome back,
           </h1>
-          <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400 bg-clip-text text-transparent">
+          <p className="text-3xl font-bold">
             {session.user.name || "User"}
           </p>
         </CardHeader>
